@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>IO chat</title>
+ <link rel = "stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"> 
+ <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+ <style >
+  body{
+   margin-top: 30px;
+  }
+
+   <style>
+body {
+  background-color: white;
+}
+#status{
+  display:none;
+}
+.bounce {
+  width: 50px;
+  height: 50px;
+  background-color: green;
+  border-radius: 50%;
+  margin: 200px auto 0;
+  animation: ball 300ms cubic-bezier(0.165, 0.840, 0.440, 1.000) infinite alternate;
+  animation-delay: 0;
+}
+.nobounce{
+  width: 50px;
+  height: 50px;
+  background-color: green;
+  border-radius: 50%;
+  margin: 200px auto 0;
+
+}
+
+.shaddow {
+  width: 50px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: gray;
+  display:block;
+  margin: 0 auto;
+  position: relative;
+  top: -10px;
+  opacity: 0.7;
+  animation: shadow 300ms cubic-bezier(0.165, 0.840, 0.440, 1.000) infinite alternate;
+  animation-delay: 0;
+}
+
+@keyframes ball {
+  0%{transform: translateY(0px);}
+  100% {transform: translateY(-150px);}
+}
+@keyframes shadow {
+  0%{transform: scale(.5);}
+  100% {transform: scale(1.1); opacity:.1;}
+}
+
+
+.shaddow_stop{
+  width: 50px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: gray;
+  display:block;
+  margin: 0 auto;
+  position: relative;
+  top: -10px;
+  opacity: 0.7;
+}
+
+ </style>
+</head>
+<body>
+<div id="ball" class="nobounce"></div>
+
+ <div class = "container">
+
+
+
+ <div id = "userFormArea" class= "row">
+
+ </div>
+  <div class = "row" id = "messageArea">
+   <div class = "col-md-4">
+    
+    
+   </div>
+   <div class = "col-md-8">
+    <div class="chat" id = "chat" style="display: none;"> </div>
+
+    <form id = "messageForm"> 
+     <div class = "form-group">
+
+      <textarea class = "form-control" id = "message" style="display: none;""> </textarea>
+      <br/>
+          <button type="submit" class = "btn btn-primary bounceit" value = "0" >Bounce</button>
+                    <button type="submit" class = "btn btn-primary stopit" value = "0" >Stop</button>
+
+
+     </div>
+
+    </form>
+
+   </div>
+
+  </div>
+  
+ </div>
+ <script>
+  $(function(){
+   var socket = io.connect();
+   var $messageForm = $('#messageForm');
+   var $message = $('#message');
+   var $chat = $('#chat');
+   var $userFormArea = $('#userFormArea');
+   var $userForm = $('#userForm');
+   var $messageArea = $('#messageArea');
+   var $users = $('#users');
+   var $username = $('#username');
+   var $status = $('#status');
+
+
+   $messageForm.submit(function(e){
+    e.preventDefault();
+    socket.emit('send message', $message.val());
+    $message.val('');
+   });
+
+   socket.on('new message', function(data){
+    
+    $chat.append('<div class = "well"><strong>'+data.user+'</strong>:' + data.msg + '<div>');
+         
+   });
+
+  socket.on('new message', function(data){
+      if(data.msg == 1){
+            
+            $("#ball").addClass("nobounce");
+            $("#ball").addClass("bounce");
+      
+
+
+          }else{
+            $("#ball").removeClass("bounce");
+            $("#ball").addClass("nobounce");
+
+        }
+   });
+
+
+   $userForm.submit(function(e){
+    e.preventDefault();
+    socket.emit('new user', $username.val(),function(data){
+     if(data){
+      $userFormArea.hide();
+      $messageArea.show();
+     }
+    });
+    $username.val('');
+   });
+   socket.on('get users', function(data){
+    var html = '';
+    for (i = 0; i< data.length; i++){
+     html +='<li class = "list-group-item" >' + data[i]+ '</li>';
+    }
+    $users.html(html);
+
+   });
+
+  });
+
+  $('.bounceit').click(function(){
+     $("#message").val("1");
+
+});
+
+  $('.stopit').click(function(){
+     $("#message").val("2");
+
+});
+
+
+ 
+ </script>
+
+</body>
+</html>
